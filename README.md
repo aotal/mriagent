@@ -1,3 +1,5 @@
+
+
 # Agente de Investigación Académica sobre Ictus (Stroke) y MRI
 
 Este proyecto implementa un equipo (Crew) de agentes de IA utilizando `crewAI` para automatizar un proceso completo de revisión de literatura científica. El objetivo es investigar el tema "Segmentación automática de lesiones por ictus (stroke) en imágenes de Resonancia Magnética (MRI)", asegurando que solo se consideren contribuciones originales, generando una bibliografía BibTeX de alta calidad y un resumen ejecutivo de los hallazgos.
@@ -56,7 +58,7 @@ graph TD
     T -- Realizada por --> U{AgenteGeneradorResumen};
     U -- Resultados --> V[Archivo research_summary.md];
 
-````
+```
 
 ## Árbol de Directorios
 
@@ -217,4 +219,3 @@ El equipo está compuesto ahora por **8 agentes especializados**:
   * **Persistencia de Resultados:** Guardar resultados intermedios (ej. JSON).
   * **Integración Crossref:** Utilizar DOIs y la API de Crossref para obtener datos BibTeX más fiables (como discutimos).
   * **Mejora del Resumen:** Permitir configurar la longitud o el enfoque del resumen generado.
-
