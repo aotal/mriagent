@@ -1,0 +1,16 @@
+[project]
+name = "mriagent"
+version = "0.1.0"
+description = "Sistema de agentes crewAI para investigación académica sobre segmentación de lesiones por ictus en MRI."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "crewai[google-genai]",
+    "python-dotenv",
+    "langchain-google-genai",
+    "beautifulsoup4",
+    "requests",
+    "biopython",
+    "arxiv",
+    "litellm>=1.78.6",
+]

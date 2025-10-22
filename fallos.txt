@@ -1,0 +1,11 @@
+aotal@Laptop-Antonio:~/github/mriagent$ uv run python main.py
+Traceback (most recent call last):
+  File "/home/aotal/github/mriagent/main.py", line 4, in <module>
+    from src.crew import ResearchCrew
+  File "/home/aotal/github/mriagent/src/crew.py", line 15, in <module>
+    from .tasks import ResearchTasks
+  File "/home/aotal/github/mriagent/src/tasks.py", line 5, in <module>
+    from .tools.pubmed_tools import PubMedTools
+  File "/home/aotal/github/mriagent/src/tools/pubmed_tools.py", line 4, in <module>
+    from crewai import Tool
+ImportError: cannot import name 'Tool' from 'crewai' (/home/aotal/github/mriagent/.venv/lib/python3.13/site-packages/crewai/__init__.py). Did you mean: 'tools'?
