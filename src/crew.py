@@ -1,73 +1,105 @@
 # src/crew.py
-# Orquestación del crew (agentes, tareas, proceso) para el sistema de investigación.
+# Orchestration of the crew (agents, tasks, process) for the research system.
 
 from crewai import Crew, Process
 from .agents import (
-    AgenteCoordinadorDeBusqueda,
-    AgenteBuscadorPubMed,
-    AgenteBuscadorArXiv,
-    AgenteFiltradorDeContenido,
-    AgenteAnalistaMetodologico,
-    AgentePriorizadorYEtiquetador,
-    AgenteGeneradorBibTeX,
-    AgenteGeneradorResumen,
+    ResearchCoordinatorAgent,
+    PubMedSearchAgent,
+    ArXivSearchAgent,
+    ContentFilteringAgent,
+    MethodologyAnalysisAgent,
+    PrioritizationAgent,
+    BibTeXGeneratorAgent,
+    SummaryGeneratorAgent,
     llm_config
 )
 from .tasks import ResearchTasks
+from typing import List
 
 class ResearchCrew:
-    def __init__(self, research_topic: str):
+    def __init__(self, research_topic: str, methodologies: List[str]):
         self.research_topic = research_topic
-        self.tasks = ResearchTasks(research_topic)
+        self.methodologies = methodologies
+        self.tasks_manager = ResearchTasks(research_topic, methodologies)
+
+        # --- 1. Definir todos los AGENTES ---
+        # Los definimos aquí para poder seleccionarlos fácilmente en el 'run'
+        self.coordinator = ResearchCoordinatorAgent
+        self.pubmed_searcher = PubMedSearchAgent
+        self.arxiv_searcher = ArXivSearchAgent
+        self.filterer = ContentFilteringAgent
+        self.analyzer = MethodologyAnalysisAgent
+        self.prioritizer = PrioritizationAgent
+        self.bibtex_gen = BibTeXGeneratorAgent
+        self.summary_gen = SummaryGeneratorAgent
+        
+        # --- 2. Definir todas las TAREAS ---
+        # Definimos todas las tareas y sus dependencias (context)
+        self.search_pubmed_task = self.tasks_manager.search_pubmed_task()
+        self.search_arxiv_task = self.tasks_manager.search_arxiv_task()
+        
+        self.consolidate_and_filter_task = self.tasks_manager.consolidate_and_filter_task(
+            context=[self.search_pubmed_task, self.search_arxiv_task]
+        )
+        
+        self.analyze_methodology_task = self.tasks_manager.analyze_methodology_task(
+            context=[self.consolidate_and_filter_task]
+        )
+        
+        self.prioritize_and_label_task = self.tasks_manager.prioritize_and_label_task(
+            context=[self.analyze_methodology_task]
+        )
+        
+        self.generate_bibtex_task = self.tasks_manager.generate_bibtex_task(
+            context=[self.prioritize_and_label_task]
+        )
+        self.generate_summary_task = self.tasks_manager.generate_summary_task(
+             context=[self.prioritize_and_label_task]
+        )
 
     def run(self):
-        # Definir las tareas
-        buscar_pubmed_task = self.tasks.tarea_buscar_pubmed()
-        buscar_arxiv_task = self.tasks.tarea_buscar_arxiv()
         
-        # Las tareas de búsqueda se ejecutan en paralelo y sus resultados se consolidan
-        # El contexto para la tarea de filtrado será el resultado de ambas búsquedas
-        consolidar_y_filtrar_reviews_task = self.tasks.tarea_consolidar_y_filtrar_reviews(
-            context=[buscar_pubmed_task, buscar_arxiv_task]
-        )
+        # ####################################################################
+        # ## PRUEBAS PASO A PASO: Modifica estas dos listas ##
+        # ####################################################################
+        #
+        # Instrucciones:
+        # 1. Descomenta los AGENTES que quieres que participen.
+        # 2. Descomenta las TAREAS que quieres ejecutar.
+        # 3. ¡El 'self.coordinator' debe estar SIEMPRE en 'active_agents'!
         
-        analizar_metodologia_y_disponibilidad_task = self.tasks.tarea_analizar_metodologia_y_disponibilidad(
-            context=[consolidar_y_filtrar_reviews_task]
-        )
+        # --- AGENTES ACTIVOS ---
+        active_agents = [
+            self.coordinator,
+            self.pubmed_searcher,
+            #self.arxiv_searcher,
+            # self.filterer,
+            # self.analyzer,
+            # self.prioritizer,
+            self.bibtex_gen,
+            self.summary_gen,
+        ]
         
-        priorizar_y_etiquetar_task = self.tasks.tarea_priorizar_y_etiquetar(
-            context=[analizar_metodologia_y_disponibilidad_task]
-        )
+        # --- TAREAS ACTIVAS ---
+        active_tasks = [
+            self.search_pubmed_task,
+            #self.search_arxiv_task,
+            # self.consolidate_and_filter_task,
+            # self.analyze_methodology_task,
+            # self.prioritize_and_label_task,
+            self.generate_bibtex_task,
+            self.generate_summary_task,
+        ]
         
-        generar_bibtex_task = self.tasks.tarea_generar_bibtex(
-            context=[priorizar_y_etiquetar_task]
-        )
-        generar_resumen_task = self.tasks.tarea_generar_resumen(
-             context=[priorizar_y_etiquetar_task] # Usar el mismo contexto que BibTeX
-        )
+        # ####################################################################
 
-        # Instanciar el Crew con un proceso jerárquico
+
+        # Instanciar el Crew con las listas activas
         crew = Crew(
-            agents=[
-                AgenteCoordinadorDeBusqueda,
-                AgenteBuscadorPubMed,
-                AgenteBuscadorArXiv,
-                AgenteFiltradorDeContenido,
-                AgenteAnalistaMetodologico,
-                AgentePriorizadorYEtiquetador,
-                AgenteGeneradorBibTeX,
-                AgenteGeneradorResumen
-            ],
-            tasks=[
-                buscar_pubmed_task,
-                buscar_arxiv_task,
-                consolidar_y_filtrar_reviews_task,
-                analizar_metodologia_y_disponibilidad_task,
-                priorizar_y_etiquetar_task,
-                generar_bibtex_task
-            ],
+            agents=active_agents,
+            tasks=active_tasks,
             process=Process.hierarchical,
-            manager_llm=llm_config, # El manager usa el LLM configurado directamente
+            manager_llm=llm_config, # El manager usa el LLM configurado
             verbose=True
         )
 

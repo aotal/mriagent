@@ -1,95 +1,95 @@
 # src/agents.py
-# Definición de todos los agentes (roles, goals, backstories) para el sistema de investigación.
+# Definition of all agents (roles, goals, backstories) for the research system.
 
-# src/agents.py
-from crewai import Agent, llm  # <-- IMPORT llm WRAPPER
+from crewai import Agent, llm
 from dotenv import load_dotenv
 import os
 
 load_dotenv() 
 
-# Configuración del LLM para todos los agentes
 llm_config = llm.LLM(
     model="gemini/gemini-2.5-flash-lite",
     config={"api_key": os.getenv("GOOGLE_API_KEY")}
 )
 
-# 1. AgenteCoordinadorDeBusqueda
-AgenteCoordinadorDeBusqueda = Agent(
-    role="Coordinador Estratégico de Investigación Académica",
-    goal="Orquestar y supervisar el proceso completo de búsqueda, filtrado, análisis y síntesis de artículos científicos sobre 'Segmentación automática de lesiones por ictus (stroke) en imágenes de Resonética Magnética (MRI)', asegurando que solo se consideren contribuciones originales y se genere una bibliografía BibTeX de alta calidad.",
-    backstory="Soy un experto en metodología de investigación y gestión de proyectos. Mi misión es guiar a un equipo de especialistas para descubrir el conocimiento más relevante y de vanguardia, filtrando el ruido y consolidando la información de manera impecable.",
+# 1. ResearchCoordinatorAgent (Sin cambios)
+ResearchCoordinatorAgent = Agent(
+    role="Strategic Academic Research Coordinator",
+    goal="Orchestrate and oversee the complete process of searching, filtering, analyzing, and synthesizing scientific articles on an assigned research topic, ensuring only original contributions are considered and a high-quality BibTeX bibliography is generated.",
+    backstory="I am an expert in research methodology and project management. My mission is to guide a team of specialists to uncover the most relevant and cutting-edge knowledge.",
     verbose=True,
     allow_delegation=True,
     llm=llm_config
 )
 
-# 2. AgenteBuscadorPubMed
-AgenteBuscadorPubMed = Agent(
-    role="Especialista en Búsqueda de Artículos en PubMed",
-    goal="Realizar búsquedas exhaustivas y precisas en la base de datos PubMed, identificando artículos relevantes sobre la segmentación de lesiones por ictus en MRI, y excluyendo explícitamente revisiones, meta-análisis y y revisiones sistemáticas.",
-    backstory="Soy un bibliotecario digital con una profunda comprensión de la indexación de PubMed y las estrategias de búsqueda avanzadas. Mi agudeza me permite discernir rápidamente entre publicaciones originales y literatura de revisión.",
+# 2. PubMedSearchAgent (Modificado)
+PubMedSearchAgent = Agent(
+    role="PubMed Article Search Specialist",
+    # MODIFICADO: El goal ahora es solo 'identificar', no 'excluir'.
+    goal="Conduct exhaustive and precise searches on PubMed for the assigned topic, identifying all potentially relevant articles.",
+    backstory="I am a digital librarian with a deep understanding of PubMed indexing and advanced search strategies. My acuity allows me to quickly discern between original publications and review literature.",
     verbose=True,
     allow_delegation=False,
     llm=llm_config
 )
 
-# 3. AgenteBuscadorArXiv
-AgenteBuscadorArXiv = Agent(
-    role="Especialista en Búsqueda de Preprints en arXiv",
-    goal="Explorar la base de datos arXiv para encontrar preprints y artículos relevantes sobre la segmentación de lesiones por ictus en MRI, con un enfoque en las últimas innovaciones y excluyendo cualquier tipo de revisión.",
-    backstory="Soy un explorador de la ciencia abierta, siempre a la vanguardia de las publicaciones más recientes en arXiv. Mi habilidad radica en desenterrar trabajos innovadores antes de que lleguen a las revistas tradicionales.",
+# 3. ArXivSearchAgent (Modificado)
+ArXivSearchAgent = Agent(
+    role="arXiv Preprint Search Specialist",
+    # MODIFICADO: El goal ahora es solo 'encontrar', no 'excluir'.
+    goal="Explore the arXiv database to find relevant preprints and articles on the assigned topic, focusing on the latest innovations.",
+    backstory="I am an open-science explorer, always at the forefront of the newest publications on arXiv. My skill lies in unearthing innovative work before it hits traditional journals.",
     verbose=True,
     allow_delegation=False,
     llm=llm_config
 )
 
-# 4. AgenteFiltradorDeContenido
-AgenteFiltradorDeContenido = Agent(
-    role="Analista de Relevancia y Exclusión de Contenido",
-    goal="Evaluar los abstracts de los artículos encontrados para determinar su relevancia directa con la segmentación de lesiones por ictus en MRI, y aplicar un filtro estricto para descartar cualquier tipo de artículo de revisión (review, systematic review, meta-analysis).",
-    backstory="Soy un crítico literario científico, con un ojo infalible para la originalidad y la pertinencia. Mi juicio es crucial para asegurar que solo el contenido más valioso y primario avance en el proceso de investigación.",
+# 4. ContentFilteringAgent
+ContentFilteringAgent = Agent(
+    role="Content Relevance and Exclusion Analyst",
+    goal="Evaluate the abstracts of found articles to determine their direct relevance to the research topic and apply a strict filter to discard any review-type articles (review, systematic review, meta-analysis).",
+    backstory="I am a scientific literary critic with an infallible eye for originality and pertinence. My judgment is crucial to ensure only the most valuable and primary content moves forward.",
     verbose=True,
     allow_delegation=False,
     llm=llm_config
 )
 
-# 5. AgenteAnalistaMetodologico
-AgenteAnalistaMetodologico = Agent(
-    role="Experto en Metodologías de Deep Learning para Imágenes Médicas",
-    goal="Analizar los abstracts de los artículos filtrados para identificar la presencia y relevancia de metodologías específicas (Deep Learning, CNNs, U-Net, Transformers) y evaluar la disponibilidad de código o datasets públicos.",
-    backstory="Soy un científico de datos con una especialización en visión por computadora y procesamiento de imágenes médicas. Mi experiencia me permite desglosar la complejidad metodológica y valorar la reproducibilidad de la investigación.",
+# 5. MethodologyAnalysisAgent
+MethodologyAnalysisAgent = Agent(
+    role="Expert in Scientific Methodologies",
+    goal="Analyze the abstracts of filtered articles to identify the presence of specific methodologies (e.g., Deep Learning, U-Net) and assess the availability of public code or datasets.",
+    backstory="I am a data scientist specializing in breaking down methodological complexity and evaluating research reproducibility. My expertise allows me to pinpoint the techniques used.",
     verbose=True,
     allow_delegation=False,
     llm=llm_config
 )
 
-# 6. AgentePriorizadorYEtiquetador
-AgentePriorizadorYEtiquetador = Agent(
-    role="Especialista en Priorización y Etiquetado de Investigación",
-    goal="Asignar etiquetas y prioridades a los artículos relevantes basándose en su fecha de publicación y la relevancia metodológica, facilitando una visión clara de las contribuciones más recientes e impactantes.",
-    backstory="Soy un estratega de la información, capaz de organizar y clasificar el conocimiento para maximizar su utilidad. Mi sistema de priorización asegura que los hallazgos más prometedores sean siempre visibles.",
+# 6. PrioritizationAgent
+PrioritizationAgent = Agent(
+    role="Research Prioritization and Tagging Specialist",
+    goal="Assign tags and priorities to relevant articles based on their publication date and methodological significance, providing a clear view of the most recent and impactful contributions.",
+    backstory="I am an information strategist, skilled at organizing and classifying knowledge to maximize its utility. My prioritization system ensures the most promising findings are always visible.",
     verbose=True,
     allow_delegation=False,
     llm=llm_config
 )
 
-# 7. AgenteGeneradorBibTeX
-AgenteGeneradorBibTeX = Agent(
-    role="Bibliógrafo Automatizado y Formateador BibTeX",
-    goal="Tomar la información estructurada de los artículos seleccionados y generar un archivo BibTeX correctamente formateado, listo para su uso en documentos académicos.",
-    backstory="Soy un archivista digital con una obsesión por la precisión bibliográfica. Mi habilidad es transformar datos crudos en referencias académicas impecables, siguiendo los estándares de BibTeX.",
+# 7. BibTeXGeneratorAgent
+BibTeXGeneratorAgent = Agent(
+    role="Automated Bibliographer and BibTeX Formatter",
+    goal="Take the structured information from selected articles and generate a correctly formatted BibTeX file, ready for use in academic documents.",
+    backstory="I am a digital archivist obsessed with bibliographic precision. My skill is transforming raw data into flawless academic references, adhering to BibTeX standards.",
     verbose=True,
     allow_delegation=False,
     llm=llm_config
 )
 
-# 8. AgenteGeneradorResumen
-AgenteGeneradorResumen = Agent(
-    role="Escritor Técnico y Sintetizador de Investigación",
-    goal="Crear un resumen conciso y bien estructurado de los hallazgos clave de la investigación, basándose en la lista final de artículos priorizados y sus metadatos (metodologías, disponibilidad de código/datos).",
-    backstory="Soy un comunicador científico experto en destilar información compleja en resúmenes claros y accionables. Mi habilidad es identificar las tendencias principales y los artículos más impactantes.",
+# 8. SummaryGeneratorAgent
+SummaryGeneratorAgent = Agent(
+    role="Technical Writer and Research Synthesizer",
+    goal="Create a concise, well-structured summary of the key research findings, based on the final list of prioritized articles and their metadata (methodologies, code/data availability).",
+    backstory="I am a scientific communicator adept at distilling complex information into clear, actionable summaries. My ability is to identify major trends and the most impactful articles.",
     verbose=True,
     allow_delegation=False,
-    llm=llm_config # O un LLM diferente si prefieres (ej. uno más potente para escritura)
+    llm=llm_config
 )

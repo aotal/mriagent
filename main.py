@@ -1,31 +1,51 @@
 # main.py
-# Punto de entrada principal para ejecutar el crew.
+# Main entry point for running the crew.
 
 from src.crew import ResearchCrew
 from dotenv import load_dotenv
 import os
 
-load_dotenv() # Cargar variables de entorno
+load_dotenv() # Load environment variables
 
 def main():
-    print("Iniciando el sistema de investigación académica...")
-    research_topic = "Segmentación automática de lesiones por ictus (stroke) en imágenes de Resonancia Magnética (MRI)"
-    
-    # Asegúrate de que la API Key de Google esté configurada
+    # --- Environment Checks ---
     if not os.getenv("GOOGLE_API_KEY"):
-        print("Error: La variable de entorno 'GOOGLE_API_KEY' no está configurada.")
-        print("Por favor, crea un archivo .env en la raíz del proyecto con GOOGLE_API_KEY=tu_api_key_aqui")
+        print("Error: 'GOOGLE_API_KEY' environment variable is not set.")
+        print("Please create a .env file in the project root with GOOGLE_API_KEY=your_api_key_here")
         return
 
-    # Asegúrate de que el email para Entrez esté configurado
     if not os.getenv("ENTREZ_EMAIL"):
-        print("Advertencia: La variable de entorno 'ENTREZ_EMAIL' no está configurada.")
-        print("Se usará 'your.email@example.com' por defecto para PubMed. Se recomienda configurar un email real.")
-        
-    crew = ResearchCrew(research_topic)
+        print("Warning: 'ENTREZ_EMAIL' environment variable is not set.")
+        print("Using 'your.email@example.com' by default for PubMed. A real email is recommended.")
+    
+    # --- Dynamic User Inputs ---
+    print("Starting the academic research system...")
+    research_topic = input("Please, enter the research topic: ")
+    
+    print("\nEnter the key methodologies to search for (e.g., Deep Learning, U-Net, Transformers):")
+    print("(One per line, press 'enter' on an empty line to finish)")
+    
+    methodologies = []
+    while True:
+        met = input().strip()
+        if not met:
+            break
+        methodologies.append(met)
+    
+    # Use a default list if the user doesn't provide any
+    if not methodologies:
+        print("No methodologies entered. Using default list.")
+        methodologies = ["Deep Learning", "CNNs", "U-Net", "Transformers"]
+
+    print(f"\nStarting research on: '{research_topic}'")
+    print(f"Searching for methodologies: {', '.join(methodologies)}")
+    
+    # --- Crew Execution ---
+    crew = ResearchCrew(research_topic, methodologies)
     result = crew.run()
+    
     print("\n################################################")
-    print("## Proceso de investigación completado ##")
+    print("## Research process completed ##")
     print("################################################\n")
     print(result)
 
